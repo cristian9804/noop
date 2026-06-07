@@ -443,6 +443,13 @@ class WhoopBleClient(
             log("send(${cmd.name}) ignored — not connected")
             return
         }
+        // WHOOP 5.0/MG uses a different (CRC16/puffin) command framing we don't build yet — never
+        // write a WHOOP4-framed command to a 5/MG strap. Its live HR/battery come from the standard
+        // profiles; the only frame we send it is the static CLIENT_HELLO. (EXPERIMENTAL)
+        if (connectedFamily != DeviceFamily.WHOOP4) {
+            log("send(${cmd.name}) skipped — WHOOP 5/MG has no command framing yet")
+            return
+        }
         seq = (seq + 1) and 0xFF
         val frame = Framing.buildCommand(cmd, payload, seq)
         enqueueWrite(PendingWrite(frame, withResponse))
@@ -787,7 +794,16 @@ class WhoopBleClient(
         // R-R: the standard profile is the reliable source — surface whenever present.
         if (rr.isNotEmpty()) _state.value = _state.value.copy(rr = rr)
         // HR: accept only physiologically plausible values; reject 0/garbage (off-wrist).
-        if (hr in 30..220) _state.value = _state.value.copy(heartRate = hr)
+        if (hr in 30..220) {
+            _state.value = _state.value.copy(heartRate = hr)
+            // EXPERIMENTAL WHOOP 5.0/MG: there is no confirmed-write bond for a 5/MG strap, so once
+            // live HR actually streams over the standard profile we treat the link as established —
+            // otherwise the UI sits on "Connecting…" forever even though data is flowing (issue #8).
+            if (connectedFamily != DeviceFamily.WHOOP4 && !_state.value.bonded) {
+                _state.value = _state.value.copy(bonded = true)
+                log("WHOOP 5/MG: live HR streaming — marking the link established (experimental).")
+            }
+        }
 
         // Record it continuously — independent of the realtime stream or which screen is open.
         // Port of BLEManager.parseStandardHR -> collector.ingestStandardHR(hr:rr:at:).

@@ -78,10 +78,15 @@ struct DataSourcesView: View {
         card(title: "WHOOP Strap (Live BLE)", icon: "antenna.radiowaves.left.and.right",
              subtitle: "Pairs directly with your strap over Bluetooth — no WHOOP app, no cloud.") {
             HStack(spacing: 8) {
-                Circle().fill(live.bonded ? StrandPalette.statusPositive : StrandPalette.statusCritical)
-                    .frame(width: 8, height: 8)
-                Text(live.bonded ? "Bonded — streaming." : "Not connected — open Live to pair.")
-                    .font(StrandFont.subhead).foregroundStyle(StrandPalette.textSecondary)
+                // Three-state, consistent with the Live screen's connection pill — a connected-but-
+                // not-yet-streaming strap (e.g. an experimental WHOOP 5/MG link) no longer reads as
+                // "Not connected" on one screen and "Connected" on another (issue #8).
+                let (dot, label): (Color, String) =
+                    live.bonded ? (StrandPalette.statusPositive, "Bonded — streaming.")
+                    : live.connected ? (StrandPalette.statusWarning, "Connected.")
+                    : (StrandPalette.statusCritical, "Not connected — open Live to pair.")
+                Circle().fill(dot).frame(width: 8, height: 8)
+                Text(label).font(StrandFont.subhead).foregroundStyle(StrandPalette.textSecondary)
             }
         }
     }

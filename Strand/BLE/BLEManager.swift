@@ -248,6 +248,13 @@ public final class BLEManager: NSObject, ObservableObject {
             log("send(\(command.label)) ignored — not connected")
             return
         }
+        // WHOOP 5.0/MG uses a different (CRC16/puffin) command framing we don't build yet. Never
+        // write a WHOOP4-framed command to a 5/MG strap — its live HR/battery come from the standard
+        // profiles, and the only frame we send it is the static CLIENT_HELLO. (EXPERIMENTAL)
+        guard selectedModel.deviceFamily == .whoop4 else {
+            log("send(\(command.label)) skipped — WHOOP 5/MG has no command framing yet")
+            return
+        }
         seq = seq &+ 1
         let frame = command.frame(seq: seq, payload: payload)
         p.writeValue(Data(frame), for: ch, type: writeType)
@@ -809,6 +816,13 @@ extension BLEManager: CBPeripheralDelegate {
         switch characteristic.uuid {
         case BLEManager.heartRateChar:
             parseStandardHR(bytes)
+            // EXPERIMENTAL WHOOP 5.0/MG: there is no confirmed-write bond for a 5/MG strap, so once
+            // live HR actually streams over the standard profile we treat the link as established —
+            // otherwise the UI sits on "Connecting…" forever even though data is flowing (issue #8).
+            if selectedModel.deviceFamily == .whoop5, !state.bonded {
+                state.bonded = true
+                log("WHOOP 5/MG: live HR streaming — marking the link established (experimental).")
+            }
         case BLEManager.batteryChar:
             if let pct = bytes.first { state.setBattery(Double(pct)) } // 0x2A19 = percent
         case BLEManager.dataNotifyChar,
