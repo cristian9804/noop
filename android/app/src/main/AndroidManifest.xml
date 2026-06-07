@@ -64,6 +64,9 @@
     <!-- Resolve the Health Connect provider on Android 14+ (platform) and earlier (app). -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- So the connection helper can detect the official WHOOP app and deep-link to its
+             info screen (a strap only pairs with one app at a time). Android 11+ visibility. -->
+        <package android:name="com.whoop.android" />
     </queries>
 
     <application

@@ -159,6 +159,12 @@ fun LiveScreen(viewModel: AppViewModel) {
                 Text("End", style = NoopType.body)
             }
         }
+
+        // Foolproof connection walkthrough — detects each blocker (WHOOP app, Bluetooth,
+        // permission) and offers a one-tap fix. Hidden once the strap is bonded.
+        if (!live.bonded) {
+            ConnectionHelp(viewModel, modifier = Modifier.fillMaxWidth())
+        }
     }
 }
 
