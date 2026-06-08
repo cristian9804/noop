@@ -33,7 +33,7 @@ Pre-built apps you can run right now:
 | **macOS** | `NOOP.app` (see [Releases](../../releases)) | Apple Silicon + Intel. Drag to Applications. Not notarized — see **First launch on macOS** below. |
 | **Android** | `NOOP-full.apk` (see [Releases](../../releases)) | The full app. `minSdk 26` (Android 8+). Sideload — enable "install unknown apps". |
 | **Android (demo)** | `NOOP-demo.apk` | Preloaded with sample data so you can explore every screen with no strap. Installs alongside the full app. |
-| **iOS** | — | The shared library is iOS-ready; the app is on the roadmap. |
+| **iOS** | Build from source — see [PR #42](../../pull/42) | An experimental community port (app + widgets + HealthKit). **Not distributed as a download:** iOS has no anonymous install path — the App Store and TestFlight both require a real Apple Developer identity — so it's build-it-yourself in Xcode, not officially maintained. |
 
 > **First launch on macOS.** NOOP is **not notarized** by Apple — notarization needs a paid Apple
 > Developer ID tied to a real identity, which doesn't fit an anonymous, free project. The app *is*
@@ -177,7 +177,7 @@ import required.
 |---|---|
 | **macOS** | ✅ Full app (`Strand/`, SwiftUI, macOS 13+). Pairs over BLE, offloads the strap's history, and scores recovery / strain / sleep on-device. The complete feature set above runs here. |
 | **Android** | ✅ Full app (`android/`, Jetpack Compose, Android 8+). Pairs over BLE, persists and scores on-device, and imports WHOOP / Apple Health / Health Connect. Grab the APK from [Releases](../../releases). |
-| **iOS** | 🟡 Libraries ready. Every package declares `.iOS(.v16)` and UI-framework code is guarded with `#if canImport(UIKit)` / `AppKit`; an iOS app target is planned. |
+| **iOS** | 🧪 Experimental community port in [PR #42](../../pull/42) — app target + widgets + Live Activity + HealthKit, builds for the iOS simulator. **Build-from-source only, not officially maintained or distributed:** iOS has no anonymous distribution path (App Store and TestFlight both require a real Apple Developer identity), which is fundamentally at odds with this project staying anonymous. The shared packages already declare `.iOS(.v16)` and UI-framework code is guarded with `#if canImport(UIKit)` / `AppKit`. |
 
 ### Strap support
 
